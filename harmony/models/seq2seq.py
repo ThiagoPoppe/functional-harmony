@@ -39,7 +39,7 @@ class TransformerDecoder(nn.Module):
         self.decoder = nn.TransformerDecoder(decoder_layer, num_layers)
         self.embedding = EmbeddingLayer(vocab_size, embedding_size, dropout)
 
-    def forward(self, x, memory, mask=None):
+    def forward(self, x, memory, mask=None, padding_mask=None):
         """
         Forward method to pass a sequence through a Transformer Decoder block.
         The input tensor must have the following shape: (batch_size, seq_length), where each position is a long value, ranging
@@ -50,7 +50,7 @@ class TransformerDecoder(nn.Module):
         """
 
         embedded = self.embedding(x)
-        outputs = self.decoder(embedded, memory, mask)
+        outputs = self.decoder(embedded, memory, mask, tgt_key_padding_mask=padding_mask)
         outputs = self.fc(outputs)
 
         return outputs
@@ -72,8 +72,8 @@ class Seq2SeqTransformer(nn.Module):
         Optionally, you can inform an attention causal mask for the target, where -inf represent unattended attention tokens, a source
         attention mask and a source padding mask.
         """
-        memory = self.encoder(src, src_mask, padding_mask)
-        outputs = self.decoder(tgt, memory, tgt_mask)
+        memory = self.encoder(src, src_mask) #aplicar tonnetz -> passar a matriz como src_mask
+        outputs = self.decoder(tgt, memory, tgt_mask, padding_mask)
 
         return outputs
 
